@@ -1,0 +1,12 @@
+my_dbt_project/target/
+my_dbt_project/dbt_packages/
+my_dbt_project/logs/
+.env
+*.env
+**/.env
+__pycache__/
+*.pyc
+.git/
+.vscode/
+.DS_Store
+logs/
