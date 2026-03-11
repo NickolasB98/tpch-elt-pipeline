@@ -1,0 +1,140 @@
+version: 2
+
+models:
+  # ===== FACT TABLE =====
+  - name: fct_orders
+    description: "Fact table with order and line item details"
+    columns:
+      - name: orderkey
+        description: "Order identifier from source"
+        tests:
+          - not_null              # Every order must have a key
+          - relationships:        # orderkey must exist in dim_customer
+              to: source('tpch', 'orders')
+              field: o_orderkey
+      
+      - name: custkey
+        description: "Customer identifier"
+        tests:
+          - not_null
+          - relationships:        # custkey must exist in dim_customers
+              to: ref('dim_customers')
+              field: custkey
+      
+      - name: orderstatus
+        description: "Order status code"
+        tests:
+          - not_null
+          - accepted_values:      # Only allow these values
+              values: ['O', 'F', 'P']  # Pending, Fulfilled, Processing
+      
+      - name: order_item_key
+        description: "Surrogate key for line items"
+        tests:
+          - unique                # No duplicates
+          - not_null
+
+  # ===== DIMENSION: CUSTOMERS =====
+  - name: dim_customers
+    description: "Customer dimension with surrogate key"
+    tests:
+      - dbt_utils.recency:        # Check if data is fresh
+          datepart: day
+          interval: 1
+          field: dbt_loaded_at
+    
+    columns:
+      - name: dim_customer_key
+        description: "Surrogate key (hashed)"
+        tests:
+          - unique                # Each customer = 1 surrogate key
+          - not_null              # Always populated
+      
+      - name: custkey
+        description: "Natural key from source"
+        tests:
+          - unique                # No duplicate customers
+          - not_null
+      
+      - name: customer_name
+        description: "Customer name"
+        tests:
+          - not_null              # Every customer must have a name
+      
+      - name: phone
+        description: "Customer phone (cleaned)"
+        tests:
+          - not_null
+
+  # ===== DIMENSION: PARTS =====
+  - name: dim_part
+    description: "Product dimension"
+    
+    columns:
+      - name: dim_part_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      
+      - name: part_key
+        description: "Natural key from source"
+        tests:
+          - unique
+          - not_null
+      
+      - name: part_name
+        description: "Part name"
+        tests:
+          - not_null
+
+  # ===== DIMENSION: SUPPLIERS =====
+  - name: dim_supplier
+    description: "Supplier dimension"
+    
+    columns:
+      - name: dim_supplier_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      
+      - name: supplier_key
+        description: "Natural key"
+        tests:
+          - unique
+          - not_null
+
+  # ===== DIMENSION: NATIONS =====
+  - name: dim_nation
+    description: "Nation dimension"
+    
+    columns:
+      - name: dim_nation_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      
+      - name: nation_key
+        description: "Natural key"
+        tests:
+          - unique
+          - not_null
+
+  # ===== DIMENSION: REGIONS =====
+  - name: dim_region
+    description: "Region dimension"
+    
+    columns:
+      - name: dim_region_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      
+      - name: region_key
+        description: "Natural key"
+        tests:
+          - unique
+          - not_null

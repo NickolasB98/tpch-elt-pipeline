@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: tpch
+    database: snowflake_sample_data
+    schema: tpch_sf1
+    tables:
+      - name: orders
+        columns:
+          - name: o_orderkey
+            tests:
+              - not_null
+              - unique
+      - name: lineitem
+        columns:
+          - name: l_orderkey
+            tests:
+              - relationships:
+                  to: source('tpch', 'orders')
+                  field: o_orderkey
+      - name: customer
+        columns:
+          - name: c_custkey
+            tests:
+              - unique
+              - not_null
+
+      - name: part
+        columns:
+          - name: p_partkey
+            tests:
+              - unique
+              - not_null
+
+      - name: supplier
+        columns:
+          - name: s_suppkey
+            tests:
+              - unique
+              - not_null
+
+      - name: nation
+        columns:
+          - name: n_nationkey
+            tests:
+              - unique
+              - not_null
+
+      - name: region
+        columns:
+          - name: r_regionkey
+            tests:
+              - unique
+              - not_null
+
+
+
